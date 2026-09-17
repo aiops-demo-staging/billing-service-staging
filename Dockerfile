@@ -1,19 +1,14 @@
-FROM node:18-alpine AS deps
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --omit=dev
-
-FROM node:18-alpine AS runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY pom.xml .
 COPY src ./src
-ENV NODE_ENV=production \
-    PORT=3000 \
-    SERVICE_NAME=billing-service \
-    SERVICE_VERSION=2.10.0
+RUN mvn -q -DskipTests package
+
+FROM eclipse-temurin:21-jre
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+WORKDIR /app
+COPY --from=build /app/target/billing-service-*.jar /app/app.jar
+ENV PORT=8080 SERVICE_NAME=billing-service
 USER appuser
-EXPOSE 3000
-HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:3000/health || exit 1
-CMD ["node", "src/server.js"]
+EXPOSE 8080
+CMD ["java", "-jar", "/app/app.jar"]

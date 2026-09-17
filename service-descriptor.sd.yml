@@ -6,14 +6,13 @@ links:
   healthcheck:
     uri: /health
   source:
-    url: https://github.com/highvelocity-rca-demo/billing-service
+    url: https://github.com/Team-Demo-12/billing-service
 compose:
   microservice:
-    image: ghcr.io/highvelocity-rca-demo/billing-service
+    image: ghcr.io/Team-Demo-12/billing-service
     tag: ${DOCKER_TAG}
-    ports: [8080:3000]
+    ports: [8080:8080]
 buildNumber: ${DOCKER_TAG}
 config:
   environmentVariables:
-    NODE_ENV: production
     SERVICE_NAME: billing-service
